@@ -32,6 +32,25 @@ void DebugWrite(const char* msg)
 		OutputDebugString(msg);
 }
 
+std::string GetFullFileName(const std::string& fileName)
+{
+	DWORD dwNeeded = GetFullPathNameA(fileName.c_str(), 0, NULL, 0);
+	if (dwNeeded == 0)
+		return fileName;
+
+	std::string ret;
+	ret.resize(dwNeeded);
+
+	DWORD dwActual = GetFullPathNameA(fileName.c_str(), dwNeeded, (char*)ret.data(), NULL);
+
+	// Does not include NULL in length computation on success
+	if ((dwActual + 1) != dwNeeded)
+		return fileName;
+
+	ret.resize(dwActual);
+	return ret;
+}
+
 uint64_t GetProcessTicks(int pid)
 {
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
@@ -66,6 +85,11 @@ uint64_t GetProcessTicks(int pid)
 void DebugWrite(const char* msg)
 {
 	msg;
+}
+
+std::string GetFullFileName(const std::string& fileName)
+{
+	return fileName;
 }
 
 #if defined(linux)

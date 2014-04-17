@@ -292,7 +292,18 @@ public:
 	{
 		Close();
 
-		m_pFile = fopen(name.c_str(), mode.c_str());
+		std::string fullName = GetFullFileName(name);
+
+		m_pFile = fopen(fullName.c_str(), mode.c_str());
+
+		if (m_pFile == NULL)
+		{
+			OpenError(fullName, errno);
+		}
+		else
+		{
+			OpenSuccess(fullName);
+		}
 	}
 
 	void Close()
@@ -350,6 +361,9 @@ public:
 	}
 
 private:
+	void OpenSuccess(const std::string& name);
+	void OpenError(const std::string& name, int err);
+
 	FILE* m_pFile;
 };
 
@@ -368,6 +382,19 @@ INT pid = 0;
 KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
 KNOB<BOOL> KnobCpuKill(KNOB_MODE_WRITEONCE, "pintool", "cpukill", "0", "Kill process when cpu becomes idle.");
+
+// Full path to the output file base
+std::string OutFileBase;
+
+void File::OpenError(const std::string& name, int err)
+{
+	DBG(("Failed to open file '%s': %s.", name.c_str(), strerror(err)));
+}
+
+void File::OpenSuccess(const std::string& name)
+{
+	DBG(("Successfully opened file '%s'.", name.c_str()));
+}
 
 const ImageRec* FindImageByAddr(ADDRINT addr)
 {
@@ -513,7 +540,7 @@ VOID Start(VOID* v)
 
 	pid = PIN_GetPid();
 
-	std::string pidFile = KnobOutput.Value() + ".pid";
+	std::string pidFile = OutFileBase + ".pid";
 	std::ofstream fout(pidFile.c_str(), std::ofstream::binary | std::ofstream::trunc);
 	fout << pid;
 
@@ -536,8 +563,7 @@ VOID Fini(INT32 code, VOID *v)
 
 	// Open file to log new traces to
 	File fileOut;
-	const std::string& outFile = KnobOutput.Value();
-	fileOut.Open(outFile + ".out", "wb");
+	fileOut.Open(OutFileBase + ".out", "wb");
 
 	unsigned long unresolved = 0, dupes = 0, run = 0;
 
@@ -615,10 +641,10 @@ int main(int argc, char* argv[])
 		return Usage();
 
 	// Get the base name to use for all outputs
-	const std::string& outFile = KnobOutput.Value();
+	OutFileBase = GetFullFileName(KnobOutput.Value());
 
 	if (KnobDebug)
-		fileDbg.Open(outFile + ".log", "wb");
+		fileDbg.Open(OutFileBase + ".log", "wb");
 
 	// Must be called before IMG_AddInstrumentFunction
 	PIN_InitSymbols();

@@ -9,10 +9,13 @@
 #define UNUSED_ARG(x) x;
 
 #include <stdint.h>
+#include <errno.h>
 
 void DebugWrite(const char* msg);
 
 uint64_t GetProcessTicks(int pid); 
+
+std::string GetFullFileName(const std::string& fileName);
 
 class WinDirHelper
 {
