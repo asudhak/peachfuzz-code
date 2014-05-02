@@ -204,6 +204,17 @@ This is an advanced element.</xs:documentation>
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
             </xs:annotation>
           </xs:enumeration>
+          <xs:enumeration value="ipv4">
+            <xs:annotation>
+              <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="ipv6">
+            <xs:annotation>
+              <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
@@ -310,6 +321,17 @@ such as \xNN, \r, \n, etc.</xs:documentation>
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
             </xs:annotation>
           </xs:enumeration>
+          <xs:enumeration value="ipv4">
+            <xs:annotation>
+              <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="ipv6">
+            <xs:annotation>
+              <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
@@ -398,6 +420,17 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
             </xs:annotation>
           </xs:enumeration>
+          <xs:enumeration value="ipv4">
+            <xs:annotation>
+              <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="ipv6">
+            <xs:annotation>
+              <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
@@ -451,6 +484,17 @@ Peach will try and crack the file  based on the data model.</xs:documentation>
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="ipv4">
+              <xs:annotation>
+                <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ipv6">
+              <xs:annotation>
+                <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
@@ -478,11 +522,6 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="ref" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Model to reference</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Model name</xs:documentation>
@@ -491,6 +530,11 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ref" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Model to reference</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -517,16 +561,6 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
         <xs:annotation>
           <xs:documentation>Units of the length attribute</xs:documentation>
@@ -551,6 +585,16 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ref" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element to reference</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="length" type="xs:unsignedInt" use="optional">
         <xs:annotation>
           <xs:documentation>Length in data element</xs:documentation>
@@ -559,11 +603,6 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="ref" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element to reference</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
@@ -581,6 +620,11 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="Blob">
@@ -596,14 +640,29 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
+          <xs:documentation>Minimum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element a token</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
@@ -667,27 +726,23 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="ipv4">
+              <xs:annotation>
+                <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ipv6">
+              <xs:annotation>
+                <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
       </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -698,14 +753,14 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
 for mutators.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:attribute name="before" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Place before this element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="after" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Place after this element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="before" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Place before this element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -728,25 +783,25 @@ for mutators.</xs:documentation>
             </xs:simpleType>
             <xs:simpleType>
               <xs:restriction base="xs:string">
-                <xs:enumeration value="CiscoFixup" />
-                <xs:enumeration value="CopyValueFixup">
+                <xs:enumeration value="CiscoCdpChecksum" />
+                <xs:enumeration value="CopyValue">
                   <xs:annotation>
                     <xs:documentation>Fixup used in testing.  Will copy another elements value into us.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="CrcDualFixup">
+                <xs:enumeration value="Crc32Dual">
                   <xs:annotation>
                     <xs:documentation>Standard CRC32 as defined by ISO 3309 applied to two elements.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="CrcFixup">
+                <xs:enumeration value="Crc">
                   <xs:annotation>
                     <xs:documentation>CRC Fixup library including CRC32 as defined by ISO 3309.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="ExpressionFixup">
+                <xs:enumeration value="Expression">
                   <xs:annotation>
-                    <xs:documentation>XOR bytes of data.</xs:documentation>
+                    <xs:documentation>Provide scripting expression to perform fixup.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
                 <xs:enumeration value="FillValue">
@@ -754,77 +809,77 @@ for mutators.</xs:documentation>
                     <xs:documentation>Will fill a BitStream with incrementing values from 'start' to 'stop'.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="HMAC">
+                <xs:enumeration value="Hmac">
                   <xs:annotation>
                     <xs:documentation>Standard Hmac checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="IcmpChecksumFixup">
+                <xs:enumeration value="IcmpChecksum">
                   <xs:annotation>
                     <xs:documentation>Standard ICMP checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="IcmpV6ChecksumFixup">
+                <xs:enumeration value="IcmpV6Checksum">
                   <xs:annotation>
                     <xs:documentation>Standard ICMPv6 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="LRCFixup">
+                <xs:enumeration value="Lrc">
                   <xs:annotation>
                     <xs:documentation>XOR bytes of data.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="MD5Fixup">
+                <xs:enumeration value="Md5">
                   <xs:annotation>
                     <xs:documentation>Standard MD5 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SHA1Fixup">
+                <xs:enumeration value="Sha1">
                   <xs:annotation>
                     <xs:documentation>Standard SHA1 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SHA224Fixup">
+                <xs:enumeration value="Sha224">
                   <xs:annotation>
                     <xs:documentation>Standard SHA256 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SHA256Fixup">
+                <xs:enumeration value="Sha256">
                   <xs:annotation>
                     <xs:documentation>Standard SHA256 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SHA384Fixup">
+                <xs:enumeration value="Sha384">
                   <xs:annotation>
                     <xs:documentation>Standard SHA384 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SHA512Fixup">
+                <xs:enumeration value="Sha512">
                   <xs:annotation>
                     <xs:documentation>Standard SHA512 checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="ScriptFixup">
+                <xs:enumeration value="Script">
                   <xs:annotation>
-                    <xs:documentation>A Python or Ruby fixup.</xs:documentation>
+                    <xs:documentation>Scripting fixup.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SequenceIncrementFixup">
+                <xs:enumeration value="SequenceIncrement">
                   <xs:annotation>
                     <xs:documentation>Standard sequential increment fixup.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="SequenceRandomFixup">
+                <xs:enumeration value="SequenceRandom">
                   <xs:annotation>
                     <xs:documentation>Standard sequential random fixup.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="TCPChecksumFixup">
+                <xs:enumeration value="TcpChecksum">
                   <xs:annotation>
                     <xs:documentation>Standard TCP checksum.</xs:documentation>
                   </xs:annotation>
                 </xs:enumeration>
-                <xs:enumeration value="UDPChecksumFixup">
+                <xs:enumeration value="UdpChecksum">
                   <xs:annotation>
                     <xs:documentation>Standard UDP checksum.</xs:documentation>
                   </xs:annotation>
@@ -1042,6 +1097,11 @@ for mutators.</xs:documentation>
       <xs:documentation>Base class for all data element relations</xs:documentation>
     </xs:annotation>
     <xs:complexType>
+      <xs:attribute name="of" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element used to generate relation value</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="expressionGet" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that is run when getting the value</xs:documentation>
@@ -1050,11 +1110,6 @@ for mutators.</xs:documentation>
       <xs:attribute name="expressionSet" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that is run when setting the value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="of" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element used to generate relation value</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="relativeTo" type="xs:string" use="optional">
@@ -1171,19 +1226,9 @@ for mutation by the mutators.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="length" type="xs:unsignedInt" use="optional">
@@ -1191,9 +1236,14 @@ for mutation by the mutators.</xs:documentation>
           <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+      <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
@@ -1220,14 +1270,19 @@ for mutation by the mutators.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1245,14 +1300,9 @@ for mutation by the mutators.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="name" type="xs:string" use="optional">
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
         <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="false" name="signed" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is number signed</xs:documentation>
+          <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="little" name="endian" use="optional">
@@ -1279,6 +1329,26 @@ for mutation by the mutators.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="size" type="xs:unsignedInt" use="required">
+        <xs:annotation>
+          <xs:documentation>Size in bits</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="signed" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is number signed</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="value" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Default value</xs:documentation>
@@ -1306,13 +1376,19 @@ for mutation by the mutators.</xs:documentation>
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="ipv4">
+              <xs:annotation>
+                <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ipv6">
+              <xs:annotation>
+                <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
-        </xs:annotation>
       </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
@@ -1334,59 +1410,19 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="size" type="xs:unsignedInt" use="required">
-        <xs:annotation>
-          <xs:documentation>Size in bits</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="Flags">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="tns:Placement" />
         <xs:element ref="tns:Flag" />
+        <xs:element ref="tns:Placement" />
         <xs:element ref="tns:Fixup" />
         <xs:element ref="tns:Hint" />
         <xs:element ref="tns:Transformer" />
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="little" name="endian" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Byte order of number (default 'little')</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="size" type="xs:unsignedInt" use="required">
         <xs:annotation>
           <xs:documentation>size in bits.  Typically [8, 16, 24, 32, 64]</xs:documentation>
@@ -1395,6 +1431,36 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
       <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="constraint" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="little" name="endian" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Byte order of number (default 'little')</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element a token</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
@@ -1413,16 +1479,6 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="size" type="xs:int" use="required">
-        <xs:annotation>
-          <xs:documentation>size in bits</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="value" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Default value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="string" name="valueType" use="optional">
         <xs:annotation>
           <xs:documentation>Format of value attribute</xs:documentation>
@@ -1445,12 +1501,23 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="ipv4">
+              <xs:annotation>
+                <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ipv6">
+              <xs:annotation>
+                <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+      <xs:attribute name="position" type="xs:int" use="required">
         <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
+          <xs:documentation>Bit position of flag</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
@@ -1463,9 +1530,19 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="position" type="xs:int" use="required">
+      <xs:attribute name="size" type="xs:int" use="required">
         <xs:annotation>
-          <xs:documentation>Bit position of flag</xs:documentation>
+          <xs:documentation>size in bits</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="value" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Default value</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1483,24 +1560,24 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="8" name="alignment" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Align to this byte boundry (e.g. 8, 16, etc.)</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="8" name="alignment" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
+          <xs:documentation>Align to this byte boundry (e.g. 8, 16, etc.)</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="alignedTo" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Name of element to base our padding on</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
@@ -1527,9 +1604,14 @@ etc.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+      <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="nullTerminated" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is string null terminated?</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="ascii" name="type" use="optional">
@@ -1571,26 +1653,6 @@ etc.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="value" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Default value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
         <xs:annotation>
           <xs:documentation>Units of the length attribute</xs:documentation>
@@ -1614,16 +1676,6 @@ etc.</xs:documentation>
             </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute default="false" name="nullTerminated" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is string null terminated?</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="padCharacter" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Character to pad length with.</xs:documentation>
-        </xs:annotation>
       </xs:attribute>
       <xs:attribute default="string" name="valueType" use="optional">
         <xs:annotation>
@@ -1647,6 +1699,17 @@ etc.</xs:documentation>
 An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="ipv4">
+              <xs:annotation>
+                <xs:documentation>An IPv4 string address that is converted to an array of bytes.
+An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ipv6">
+              <xs:annotation>
+                <xs:documentation>An IPv6 string address that is converted to an array of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
@@ -1660,14 +1723,39 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="value" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Default value</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
+        <xs:annotation>
+          <xs:documentation>Length in data element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="padCharacter" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Character to pad length with.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1691,6 +1779,16 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="constraint" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
         <xs:annotation>
           <xs:documentation>Units of the length attribute</xs:documentation>
@@ -1715,29 +1813,9 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="attributeName" type="xs:string" use="required">
-        <xs:annotation>
-          <xs:documentation>Name of XML attribute</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="ns" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>XML Namespace</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Name of element</xs:documentation>
+          <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="length" type="xs:unsignedInt" use="optional">
@@ -1745,19 +1823,29 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute name="ns" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
+          <xs:documentation>XML Namespace</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
+      <xs:attribute name="attributeName" type="xs:string" use="required">
         <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+          <xs:documentation>Name of XML attribute</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Name of element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1781,6 +1869,31 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Name of element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="elementName" type="xs:string" use="required">
+        <xs:annotation>
+          <xs:documentation>Name of XML element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ns" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>XML Namespace</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
+        <xs:annotation>
+          <xs:documentation>Length in data element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
         <xs:annotation>
           <xs:documentation>Units of the length attribute</xs:documentation>
@@ -1805,36 +1918,6 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="ns" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>XML Namespace</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Name of element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="elementName" type="xs:string" use="required">
-        <xs:annotation>
-          <xs:documentation>Name of XML element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
@@ -1848,6 +1931,11 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
       <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>

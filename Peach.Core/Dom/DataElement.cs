@@ -95,7 +95,20 @@ namespace Peach.Core.Dom
 		/// An example is "[1,2,3,4]" which would evaluate to a python list.
 		/// </summary>
 		[XmlEnum("literal")]
-		Literal
+		Literal,
+
+		/// <summary>
+		/// An IPv4 string address that is converted to an array of bytes.
+		/// An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0x01.
+		/// </summary>
+		[XmlEnum("ipv4")]
+		IPv4,
+
+		/// <summary>
+		/// An IPv6 string address that is converted to an array of bytes.
+		/// </summary>
+		[XmlEnum("ipv6")]
+		IPv6,
 	}
 
 	public enum EndianType

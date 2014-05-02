@@ -37,6 +37,7 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using System.Net;
 
 namespace Peach.Core.Test.PitParserTests
 {
@@ -109,6 +110,40 @@ namespace Peach.Core.Test.PitParserTests
 			var val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
 			Assert.AreEqual(20, val.Length);
+		}
+
+		[Test]
+		public void BlobTest5()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"127.0.0.1\" valueType=\"ipv4\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value.ToArray();
+			var exp = IPAddress.Loopback.GetAddressBytes();
+			Assert.AreEqual(exp, val);
+		}
+
+		[Test]
+		public void BlobTest6()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"::1\" valueType=\"ipv6\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value.ToArray();
+			var exp = IPAddress.IPv6Loopback.GetAddressBytes();
+			Assert.AreEqual(exp, val);
 		}
 
 		private void DoHexPad(bool throws, int length, string value, bool token = false)
