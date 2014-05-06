@@ -190,7 +190,10 @@ def build(bld):
 
 	# Ignore blacklisted subdirectories
 	for x in ignore:
-		subdirs.remove( os.path.normpath(x) )
+		x = os.path.normpath(x)
+		if Logs.verbose > 0:
+			Logs.warn("Skipping directory '%s'" % x)
+		subdirs.remove(x)
 
 	what = Options.options.variant or ''
 	variants = what.split(',')
