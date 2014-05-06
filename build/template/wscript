@@ -20,6 +20,12 @@ appname = SETME
 # peach should be the path to the Peach submodule, eg: '.'
 peach = PEACH_SUBMODULE_PATH
 
+# Branch suffix to use as last portion of build tag
+branch = 0
+
+# blacklist wscripts inside any of the following subdirectories
+ignore = []
+
 # Returns true if the variant should be supported
 def supported_variant(name):
 	return True;

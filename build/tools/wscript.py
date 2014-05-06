@@ -183,9 +183,14 @@ def build(bld):
 		return
 
 	# Find the topmost directories that contain wscript_build, up to maxpath in depth
+	ignore = getattr(Context.g_module, 'ignore', [])
 	maxdepth = getattr(Context.g_module, 'maxdepth', 1)
 	dirs = [ x.parent for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
 	subdirs = [ x.nice_path() for x in dirs if x.parent not in dirs ]
+
+	# Ignore blacklisted subdirectories
+	for x in ignore:
+		subdirs.remove( os.path.normpath(x) )
 
 	what = Options.options.variant or ''
 	variants = what.split(',')
