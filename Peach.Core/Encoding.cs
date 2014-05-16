@@ -53,7 +53,11 @@ namespace Peach.Core
 
 			public override bool Equals(object value)
 			{
-				return object.Equals(this, (object)value);
+				var other = value as RawEncoder;
+				if (other == null)
+					return false;
+
+				return this.parent == other.parent;
 			}
 
 			public override int GetHashCode()

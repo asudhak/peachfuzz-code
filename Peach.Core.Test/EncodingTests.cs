@@ -282,5 +282,18 @@ namespace Peach.Core.Test
 			expected = new byte[] { (byte)'+', (byte)'2', (byte)'V', (byte)'D', (byte)'f', (byte)'I', (byte)'Q', (byte)'-' };
 			Assert.AreEqual(expected, bytes);
 		}
+
+		[Test]
+		public void EqualsTest()
+		{
+			var one = new ASCIIEncoding().RawEncoding;
+			var two = new ASCIIEncoding().RawEncoding;
+
+			Assert.AreEqual(one, one);
+			Assert.AreNotEqual(one, two);
+			Assert.AreNotEqual(one, null);
+			Assert.AreNotEqual(two, null);
+
+		}
 	}
 }
