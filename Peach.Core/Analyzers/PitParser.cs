@@ -584,7 +584,7 @@ namespace Peach.Core.Analyzers
 
 				name = name.Substring(name.IndexOf(':') + 1);
 
-				return getReference(other, name, container);
+				return getReference(other, name, null);
 			}
 
 			if (container != null)
