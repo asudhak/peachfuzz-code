@@ -123,7 +123,7 @@ namespace Peach.Core.ComContainer
 			state["ComArg"] = value;
 
 			string cmd = "ComObject." + property + " = ComArg";
-			Scripting.EvalExpression(cmd, state);
+			Scripting.Exec(cmd, state);
 		}
 
 		public void Shutdown()
