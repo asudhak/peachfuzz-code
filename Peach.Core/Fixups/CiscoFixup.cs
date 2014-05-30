@@ -24,7 +24,7 @@ namespace Peach.Core.Fixups.Libraries
 			if (i != count)
 			{
 				if ((buf[count - 1] & 0x80) != 0)
-					sum += (uint)((buf[count - 1] - 1) & 0xff00);
+					sum += (uint)((buf[count - 1] - 1) | 0xff00);
 				else
 					sum += (uint)(buf[count - 1]);
 			}

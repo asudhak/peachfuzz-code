@@ -23,7 +23,7 @@ namespace Peach.Core.Test.Fixups
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
 				"   <DataModel name=\"TheDataModel\">" +
-				"       <Number name=\"Cdp\" size=\"16\" signed=\"false\" endian=\"little\">" +
+				"       <Number name=\"Cdp\" size=\"16\" signed=\"false\" endian=\"big\">" +
 				"           <Fixup class=\"CiscoFixup\">" +
 				"               <Param name=\"ref\" value=\"Data1\"/>" +
 				"           </Fixup>" +
@@ -56,8 +56,9 @@ namespace Peach.Core.Test.Fixups
 			e.startFuzzing(dom, config);
 
 			// verify values
-			byte[] precalcChecksum = new byte[] { 0x0a, 0x09 };
+			byte[] precalcChecksum = new byte[] { 0x09, 0xa0 };
 			Assert.AreEqual(1, values.Count);
+			byte[] val = values[0].ToArray();
 			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
