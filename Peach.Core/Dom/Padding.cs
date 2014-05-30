@@ -53,12 +53,14 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", "8")]
 	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on", "")]
+	[Parameter("minSize", typeof(int), "Minimum size to pad to", "0")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Serializable]
 	public class Padding : DataElement
 	{
 		int _alignment = 8;
+		int _minSize = 0;
 		DataElement _alignedTo = null;
 
 		/// <summary>
@@ -101,6 +103,9 @@ namespace Peach.Core.Dom
 					throw new PeachException("Error, unable to resolve alignedTo '" + strTo + "'.");
 			}
 
+			if (node.hasAttr("minSize"))
+				padding.minSize = node.getAttrInt("minSize");
+
 			context.handleCommonDataElementAttributes(node, padding);
 			context.handleCommonDataElementChildren(node, padding);
 
@@ -116,6 +121,16 @@ namespace Peach.Core.Dom
 			set
 			{
 				_alignment = value;
+				Invalidate();
+			}
+		}
+
+		public virtual int minSize
+		{
+			get { return _minSize; }
+			set
+			{
+				_minSize = value;
 				Invalidate();
 			}
 		}
@@ -213,17 +228,18 @@ namespace Peach.Core.Dom
 						alignedElement = _alignedTo;
 
 					long currentLength = alignedElement.CalcLengthBits();
-					long count = currentLength % _alignment;
+					long minSize = Math.Max(_minSize - currentLength, 0);
+					long count =  (minSize + currentLength) % _alignment;
 
 					if (count != 0)
-						count = _alignment - count;
+						minSize += _alignment - count;
 
 					BitStream data = new BitStream();
-					while (count > 0)
+					while (minSize > 0)
 					{
-						int bitlen = (int)Math.Min(count, 64);
+						int bitlen = (int)Math.Min(minSize, 64);
 						data.WriteBits(0, bitlen);
-						count -= bitlen;
+						minSize -= bitlen;
 					}
 					data.SeekBits(0, System.IO.SeekOrigin.Begin);
 
