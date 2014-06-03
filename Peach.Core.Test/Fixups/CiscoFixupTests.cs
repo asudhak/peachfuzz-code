@@ -52,7 +52,7 @@ namespace Peach.Core.Test.Fixups
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;
 
-			Engine e = new Engine(this);
+			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
 			// verify values
@@ -99,7 +99,7 @@ namespace Peach.Core.Test.Fixups
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;
 
-			Engine e = new Engine(this);
+			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
 			// verify values
@@ -145,7 +145,7 @@ namespace Peach.Core.Test.Fixups
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;
 
-			Engine e = new Engine(this);
+			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
 			// verify values
