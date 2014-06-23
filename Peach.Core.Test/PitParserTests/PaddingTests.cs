@@ -182,5 +182,134 @@ namespace Peach.Core.Test.PitParserTests
 			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 		}
 
+		[Test]
+		public void PaddingTest7()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Padding minSize='32'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][1] as Padding;
+
+			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest8()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Padding minSize='32' alignment='48' />
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][1] as Padding;
+
+			Assert.AreEqual(24, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest9()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Padding minSize='32' alignment='32' />
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][1] as Padding;
+
+			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest10()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Padding minSize='24'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][1] as Padding;
+
+			Assert.AreEqual(0, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest11()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Blob length='3'/>
+		<Padding minSize='64'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][2] as Padding;
+
+			Assert.AreEqual(16, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest12()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Blob name='b' length='3'/>
+		<Padding minSize='64' alignedTo='b'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][2] as Padding;
+
+			Assert.AreEqual(40, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test]
+		public void PaddingTest13()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Blob length='3'/>
+		<Blob name='b' length='3'/>
+		<Padding minSize='24' alignedTo='b' alignment='64'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][2] as Padding;
+
+			Assert.AreEqual(40, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
 	}
 }

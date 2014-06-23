@@ -522,11 +522,6 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Model name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
@@ -535,6 +530,11 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
       <xs:attribute name="ref" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Model to reference</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Model name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -561,6 +561,21 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute name="ref" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element to reference</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
+        <xs:annotation>
+          <xs:documentation>Length in data element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
         <xs:annotation>
           <xs:documentation>Units of the length attribute</xs:documentation>
@@ -585,19 +600,14 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="ref" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element to reference</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
@@ -615,16 +625,6 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Minimum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="Blob">
@@ -640,29 +640,14 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
@@ -740,9 +725,24 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element a token</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1102,24 +1102,24 @@ for mutators.</xs:documentation>
           <xs:documentation>Element used to generate relation value</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="expressionGet" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Scripting expression that is run when getting the value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="expressionSet" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that is run when setting the value</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="relativeTo" type="xs:string" use="optional">
+      <xs:attribute name="expressionGet" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Element to compute value relative to</xs:documentation>
+          <xs:documentation>Scripting expression that is run when getting the value</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="false" name="relative" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is the offset relative</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="relativeTo" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element to compute value relative to</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
@@ -1226,14 +1226,14 @@ for mutation by the mutators.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
@@ -1241,9 +1241,9 @@ for mutation by the mutators.</xs:documentation>
           <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
+          <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
@@ -1300,9 +1300,34 @@ for mutation by the mutators.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
+          <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="size" type="xs:unsignedInt" use="required">
+        <xs:annotation>
+          <xs:documentation>Size in bits</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="false" name="signed" type="xs:boolean" use="optional">
+        <xs:annotation>
+          <xs:documentation>Is number signed</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="little" name="endian" use="optional">
@@ -1329,26 +1354,6 @@ for mutation by the mutators.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="size" type="xs:unsignedInt" use="required">
-        <xs:annotation>
-          <xs:documentation>Size in bits</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="false" name="signed" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is number signed</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="value" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Default value</xs:documentation>
@@ -1390,19 +1395,14 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
         <xs:annotation>
-          <xs:documentation>Is element mutable</xs:documentation>
+          <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
@@ -1423,19 +1423,14 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="size" type="xs:unsignedInt" use="required">
-        <xs:annotation>
-          <xs:documentation>size in bits.  Typically [8, 16, 24, 32, 64]</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Minimum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+          <xs:documentation>Actual occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
@@ -1443,9 +1438,9 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+      <xs:attribute name="size" type="xs:unsignedInt" use="required">
         <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
+          <xs:documentation>size in bits.  Typically [8, 16, 24, 32, 64]</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="little" name="endian" type="xs:string" use="optional">
@@ -1461,6 +1456,11 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="constraint" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
@@ -1479,6 +1479,26 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="position" type="xs:int" use="required">
+        <xs:annotation>
+          <xs:documentation>Bit position of flag</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="size" type="xs:int" use="required">
+        <xs:annotation>
+          <xs:documentation>size in bits</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="value" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Default value</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="string" name="valueType" use="optional">
         <xs:annotation>
           <xs:documentation>Format of value attribute</xs:documentation>
@@ -1515,34 +1535,14 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="position" type="xs:int" use="required">
+      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
         <xs:annotation>
-          <xs:documentation>Bit position of flag</xs:documentation>
+          <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="size" type="xs:int" use="required">
-        <xs:annotation>
-          <xs:documentation>size in bits</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="value" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Default value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="false" name="token" type="xs:boolean" use="optional">
-        <xs:annotation>
-          <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1560,6 +1560,11 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute name="alignedTo" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Name of element to base our padding on</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Element name</xs:documentation>
@@ -1570,9 +1575,9 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Align to this byte boundry (e.g. 8, 16, etc.)</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="alignedTo" type="xs:string" use="optional">
+      <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Name of element to base our padding on</xs:documentation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
@@ -1580,9 +1585,9 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
+      <xs:attribute default="0" name="minSize" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+          <xs:documentation>Minimum size to pad to</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1604,14 +1609,63 @@ etc.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute name="constraint" type="xs:string" use="optional">
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
         <xs:annotation>
-          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="false" name="nullTerminated" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is string null terminated?</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="padCharacter" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Character to pad length with.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
+        <xs:annotation>
+          <xs:documentation>Length in data element</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="bytes" name="lengthType" use="optional">
+        <xs:annotation>
+          <xs:documentation>Units of the length attribute</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="bytes">
+              <xs:annotation>
+                <xs:documentation>Indicates the length is specified in units of bytes.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="bits">
+              <xs:annotation>
+                <xs:documentation>Indicates the length is specified in units of bits.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="chars">
+              <xs:annotation>
+                <xs:documentation>Indicates the length is specified in units of characters.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="name" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="ascii" name="type" use="optional">
@@ -1653,29 +1707,10 @@ etc.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="bytes" name="lengthType" use="optional">
+      <xs:attribute name="value" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Units of the length attribute</xs:documentation>
+          <xs:documentation>Default value</xs:documentation>
         </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="bytes">
-              <xs:annotation>
-                <xs:documentation>Indicates the length is specified in units of bytes.</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="bits">
-              <xs:annotation>
-                <xs:documentation>Indicates the length is specified in units of bits.</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="chars">
-              <xs:annotation>
-                <xs:documentation>Indicates the length is specified in units of characters.</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-          </xs:restriction>
-        </xs:simpleType>
       </xs:attribute>
       <xs:attribute default="string" name="valueType" use="optional">
         <xs:annotation>
@@ -1723,39 +1758,9 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+      <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="value" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Default value</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="padCharacter" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Character to pad length with.</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Element name</xs:documentation>
+          <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -1779,14 +1784,39 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+      <xs:attribute name="name" type="xs:string" use="optional">
         <xs:annotation>
-          <xs:documentation>Minimum occurances</xs:documentation>
+          <xs:documentation>Name of element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="constraint" type="xs:string" use="optional">
         <xs:annotation>
           <xs:documentation>Scripting expression that evaluates to true or false</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Minimum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Actual occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="attributeName" type="xs:string" use="required">
+        <xs:annotation>
+          <xs:documentation>Name of XML attribute</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ns" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>XML Namespace</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
+        <xs:annotation>
+          <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute default="bytes" name="lengthType" use="optional">
@@ -1818,31 +1848,6 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="length" type="xs:unsignedInt" use="optional">
-        <xs:annotation>
-          <xs:documentation>Length in data element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="ns" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>XML Namespace</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="attributeName" type="xs:string" use="required">
-        <xs:annotation>
-          <xs:documentation>Name of XML attribute</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Actual occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="name" type="xs:string" use="optional">
-        <xs:annotation>
-          <xs:documentation>Name of element</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Maximum occurances</xs:documentation>
@@ -1869,6 +1874,11 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
+      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
+        <xs:annotation>
+          <xs:documentation>Maximum occurances</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute default="1" name="occurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Actual occurances</xs:documentation>
@@ -1931,11 +1941,6 @@ An example is "127.0.0.1" which would evaluate to the bytes: 0x7f, 0x00, 0x00, 0
       <xs:attribute default="1" name="minOccurs" type="xs:int" use="optional">
         <xs:annotation>
           <xs:documentation>Minimum occurances</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute default="1" name="maxOccurs" type="xs:int" use="optional">
-        <xs:annotation>
-          <xs:documentation>Maximum occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
