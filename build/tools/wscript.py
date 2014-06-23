@@ -49,6 +49,10 @@ def options(opt):
 	opt.load('tools.idegen')
 	opt.load('tools.test')
 
+	opt.add_option('--strict',
+	               action = 'store_true',
+	               default = False,
+	               help = 'Error if any features are missing')
 	opt.add_option('--variant',
 	               action = 'store',
 	               default = None,
@@ -153,7 +157,11 @@ def configure(ctx):
 				if Logs.verbose == 0:
 					missing = cfg_env['missing_features'] or ''
 					if missing:
-						missing = ' - Missing Features: %s' % ','.join(missing)
+						msg = 'Missing Features: %s' % ','.join(missing)
+						if Options.options.strict:
+							raise Exception(msg)
+						else:
+							missing = ' - %s' % msg
 					Logs.pprint('GREEN', 'Available%s' % missing)
 
 			except Exception, e:
