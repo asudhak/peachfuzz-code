@@ -167,8 +167,14 @@ namespace Peach.Core.Agent.Channels
 
 			if (_channel != null)
 			{
-				ChannelServices.UnregisterChannel(_channel);
-				_channel = null;
+				try
+				{
+					ChannelServices.UnregisterChannel(_channel);
+				}
+				finally
+				{
+					_channel = null;
+				}
 			}
 		}
 
@@ -187,15 +193,25 @@ namespace Peach.Core.Agent.Channels
 
 			_url = url;
 
-			CreateProxy();
-
 			try
 			{
-				proxy.AgentConnect(null);
+				CreateProxy();
+
+				try
+				{
+					proxy.AgentConnect(null);
+				}
+				catch (Exception ex)
+				{
+					throw new PeachException("Error, unable to connect to remote agent '" + _url + "'.  " + ex.Message, ex);
+				}
 			}
-			catch (Exception ex)
+			catch
 			{
-				throw new PeachException("Error, unable to connect to remote agent '" + _url + "'.  " + ex.Message, ex);
+				// If this throws, AgentDisconnect will not be called
+				RemoveProxy();
+
+				throw;
 			}
 		}
 
