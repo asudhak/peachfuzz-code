@@ -135,6 +135,11 @@ def configure(ctx):
 					ctx.load(tool, tool_dir)
 
 				config.configure(ctx)
+
+				missing = ctx.env['missing_features'] or ''
+				if missing and Options.options.strict:
+					raise Exception('Missing Features: %s' % ','.join(missing))
+
 				cfgs = ctx.env.VARIANTS
 
 				if not cfgs:
@@ -155,13 +160,8 @@ def configure(ctx):
 					base_env.append_value('variants', variant)
 
 				if Logs.verbose == 0:
-					missing = cfg_env['missing_features'] or ''
 					if missing:
-						msg = 'Missing Features: %s' % ','.join(missing)
-						if Options.options.strict:
-							raise Exception(msg)
-						else:
-							missing = ' - %s' % msg
+						missing = ' - Missing Features: %s' % ','.join(missing)
 					Logs.pprint('GREEN', 'Available%s' % missing)
 
 			except Exception, e:
