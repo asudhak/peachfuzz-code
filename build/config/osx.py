@@ -36,6 +36,7 @@ def prepare(conf):
 		'/Library/Frameworks/Mono.framework/Commands',
 		'/usr/bin',
 		'/Developer/usr/bin',
+		'/usr/local/bin',
 	]
 
 	env['MCS']  = 'dmcs'
