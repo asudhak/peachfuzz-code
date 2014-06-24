@@ -18,9 +18,16 @@ subdirs = [
 
 bld.recurse(subdirs)
 
-# Allow for compilation of all c# on windows
 if bld.env.CS_NAME == 'csc':
+	# Allow for compilation of all c# on windows
 	bld.read_csshlib('Mono.Posix.dll', paths=['Mono.2.10.9'])
+
+	# Needed to run remote agent tests
+	bld(
+		name = 'nunit.core.dll',
+		install_path = '${BINDIR}',
+		install_755 = { bld.path.find_node('NUnit.Runners.2.6.3/tools/lib') : 'nunit.core.dll' },
+	)
 
 if bld.env.BASENAME == 'osx':
 	bld(
