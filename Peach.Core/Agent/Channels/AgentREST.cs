@@ -506,7 +506,7 @@ namespace Peach.Core.Agent.Channels
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		private static string _url;
+		private string _url;
 		public AgentClientRest(string name, string uri, string password)
 		{
 			this.name = name;
