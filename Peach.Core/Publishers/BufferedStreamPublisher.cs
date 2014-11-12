@@ -21,8 +21,8 @@ namespace Peach.Core.Publishers
 		public int Timeout { get; set; }
 
 		protected int _sendLen = 0;
-		protected byte[] _sendBuf = new byte[1024];
-		protected byte[] _recvBuf = new byte[1024];
+		protected byte[] _sendBuf = new byte[0x14000]; // Buffer size Stream.CopyTo uses
+		protected byte[] _recvBuf = new byte[0x14000];
 		protected object _bufferLock = new object();
 		protected object _clientLock = new object();
 		protected string _clientName = null;
