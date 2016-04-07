@@ -1,0 +1,5 @@
+language : csharp
+script :
+  - ./waf configure
+  - ./waf build
+
